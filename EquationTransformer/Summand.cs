@@ -22,6 +22,8 @@ namespace EquationTransformer
         /// <param name="power"></param>
         public void AddVariable(char name, int power)
         {
+            name = char.ToLowerInvariant(name);
+
             // handle y * y * x^2 situation
             if (_variables.ContainsKey(name))
             {

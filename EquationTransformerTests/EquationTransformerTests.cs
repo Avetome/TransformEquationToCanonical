@@ -89,5 +89,17 @@ namespace EquationTransformerTests
 
             Assert.Equal("0 = 0;", result);
         }
+
+        [Fact]
+        public void Test7()
+        {
+            var str = "x2 = 3X";
+
+            var trasformer = new EquationTrasformer();
+
+            var result = trasformer.Transform(str);
+
+            Assert.Equal("-x = 0;", result);
+        }
     }
 }

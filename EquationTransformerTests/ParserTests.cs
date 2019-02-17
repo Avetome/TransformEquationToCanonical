@@ -465,7 +465,6 @@ namespace EquationTransformerTests
             Assert.Equal(1, summand3.Variables['y']);
         }
 
-
         [Fact]
         public void Test12()
         {
@@ -513,6 +512,45 @@ namespace EquationTransformerTests
             Assert.Single(summand6.Variables);
             Assert.True(summand6.Variables.ContainsKey('y'));
             Assert.Equal(2, summand6.Variables['y']);
+        }
+
+        [Fact]
+        public void Test13()
+        {
+            var str = "x2X";
+
+            var parser = new Parser(str);
+
+            var summands = parser.GetSummand();
+            var summand1 = summands.First();
+            var summand2 = summands.Last();
+
+            Assert.Equal(2, summand1.Multiplier);
+            Assert.Single(summand1.Variables);
+            Assert.True(summand1.Variables.ContainsKey('x'));
+            Assert.Equal(2, summand1.Variables['x']);
+        }
+
+        [Fact]
+        public void Test14()
+        {
+            var str = "x2 = 3X";
+
+            var parser = new Parser(str);
+
+            var summands = parser.GetSummand();
+            var summand1 = summands.First();
+            var summand2 = summands.Last();
+
+            Assert.Equal(2, summand1.Multiplier);
+            Assert.Single(summand1.Variables);
+            Assert.True(summand1.Variables.ContainsKey('x'));
+            Assert.Equal(1, summand1.Variables['x']);
+
+            Assert.Equal(-3, summand2.Multiplier);
+            Assert.Single(summand2.Variables);
+            Assert.True(summand2.Variables.ContainsKey('x'));
+            Assert.Equal(1, summand2.Variables['x']);
         }
     }
 }
