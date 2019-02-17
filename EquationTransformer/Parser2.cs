@@ -164,8 +164,12 @@ namespace EquationTransformer
                     && _tokenizer.Token != Token.Variable
                     && _tokenizer.Token != Token.OpenParens)
             {
-                // http://atkritka.com/upload/iblock/e04/atkritka_1334746045_433.jpg
-                // Don't get me wrong...
+                // Upon the village, cross the sky
+                // Creepy gizmo’s flying by
+                // There’s excess in those days
+                // of such gizmos anyways
+                // http://chastushki.net.ru/texts/22
+                // P.S. Don't get me wrong...
                 throw new Exception($"Unexpect token: {_tokenizer.Token}");
             }
 
