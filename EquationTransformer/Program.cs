@@ -37,6 +37,8 @@ namespace EquationTransformer
             Console.Title = "Transform equation To canonical form";
 
             Console.ForegroundColor = MessagesColor;
+            Console.WriteLine("***** Enter a double numbers with dots (\"4.5\", not \"4,5\") *****");
+            Console.WriteLine("***** Divide operation (\"/\") not supported, as well as any math functions, bit-wise operations etc...*****");
             Console.WriteLine("***** Press CTRL+C to exit the program *****");
             Console.ForegroundColor = NormalColor;
 
@@ -87,6 +89,12 @@ namespace EquationTransformer
 
                 while ((line = inputFile.ReadLine()) != null)
                 {
+                    if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line))
+                    {
+                        // forgive them their sins...
+                        continue;
+                    }
+
                     EquationTrasformer equationTrasformer = new EquationTrasformer();
                     result = equationTrasformer.Transform(line);
 
