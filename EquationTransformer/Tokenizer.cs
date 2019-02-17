@@ -70,11 +70,6 @@ namespace EquationTransformer
                     _currentToken = Token.Multiply;
                     return;
 
-                case '/':
-                    NextChar();
-                    _currentToken = Token.Divide;
-                    return;
-
                 case '(':
                     NextChar();
                     _currentToken = Token.OpenParens;
