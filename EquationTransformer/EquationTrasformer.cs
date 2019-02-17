@@ -20,17 +20,28 @@ namespace EquationTransformer
 
             summands = summands.OrderByDescending(s => s.Power).ToList();
 
-            var excluded = new HashSet<int>();
-            var newSummands = new List<Summand>();
+            return StringifySummands(SimplifySummands(summands));
+        }
 
-            for(var i = 0; i < summands.Count; i++)
+        /// <summary>
+        /// Summarize summands with equals power and remove summands with zero multiplier.
+        /// </summary>
+        /// <param name="summands"></param>
+        /// <returns></returns>
+        private List<Summand> SimplifySummands(List<Summand> summands)
+        {
+            var result = new List<Summand>();
+
+            var excluded = new HashSet<int>();
+
+            for (var i = 0; i < summands.Count; i++)
             {
                 if (excluded.Contains(i))
                 {
                     continue;
                 }
 
-                var currentSummand = summands[i];                
+                var currentSummand = summands[i];
 
                 for (var j = i + 1; j < summands.Count; j++)
                 {
@@ -43,16 +54,16 @@ namespace EquationTransformer
                     {
                         excluded.Add(j);
                         currentSummand.Multiplier += summands[j].Multiplier;
-                    }                    
+                    }
                 }
 
                 if (currentSummand.Multiplier != 0)
                 {
-                    newSummands.Add(currentSummand);
-                }                
+                    result.Add(currentSummand);
+                }
             }
 
-            return StringifySummands(newSummands);
+            return result;
         }
 
         private string StringifySummands(List<Summand> summands)
