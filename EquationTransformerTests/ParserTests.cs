@@ -1,8 +1,6 @@
 ﻿using EquationTransformer;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Xunit;
 
 namespace EquationTransformerTests
@@ -162,6 +160,18 @@ namespace EquationTransformerTests
         public void Test7()
         {
             var str = "y2(";
+
+            var parser = new Parser(str);
+
+            Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
+
+            Assert.Equal("Invalid count of parens", ex.Message);
+        }
+
+        [Fact]
+        public void Test71()
+        {
+            var str = "y2(x + 5(y + )";
 
             var parser = new Parser(str);
 
@@ -390,7 +400,7 @@ namespace EquationTransformerTests
         [Fact]
         public void Test10()
         {
-            var str = "x2 = 3y";
+            var str = "x2 - 3y";
 
             var parser = new Parser(str);
 
@@ -412,7 +422,7 @@ namespace EquationTransformerTests
         [Fact]
         public void Test11()
         {
-            var str = "x2 + 4 = 3y";
+            var str = "x2 + 4 - 3y";
 
             var parser = new Parser(str);
 
@@ -534,7 +544,7 @@ namespace EquationTransformerTests
         [Fact]
         public void Test14()
         {
-            var str = "x2 = 3X";
+            var str = "x2 - 3X";
 
             var parser = new Parser(str);
 

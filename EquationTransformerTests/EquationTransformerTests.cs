@@ -1,4 +1,5 @@
 ﻿using EquationTransformer;
+using System;
 using Xunit;
 
 namespace EquationTransformerTests
@@ -6,6 +7,7 @@ namespace EquationTransformerTests
     /// <summary>
     /// TODO: I'm too lazy to write display names to other tests in other files.
     /// It's only test work, after all.
+    /// And I also known what "Test1" - not a best name for test methods, but...
     /// </summary>
     [Collection("Full equation transform tests")]
     public class EquationTransformerTests
@@ -105,6 +107,42 @@ namespace EquationTransformerTests
             var result = trasformer.Transform(str);
 
             Assert.Equal("-x = 0;", result);
+        }
+
+        [Fact(DisplayName = "Equation: y2(x + 5(y + ) = yx")]
+        public void Test8()
+        {
+            var str = "y2(x + 5(y + ) = yx";
+
+            var trasformer = new EquationTrasformer();
+
+            Exception ex = Assert.Throws<Exception>(() => trasformer.Transform(str));
+
+            Assert.Equal("Invalid count of parens", ex.Message);
+        }
+
+        [Fact(DisplayName = "Equation: -7 + 4x^2 + xy - x^4 + z = y - 2xy + w^2")]
+        public void Test9()
+        {
+            var str = "-7 + 4x^2 + xy - x^4 + z = y - 2xy + w^2";
+
+            var trasformer = new EquationTrasformer();
+
+            var result = trasformer.Transform(str);
+
+            Assert.Equal("-x^4 + 4x^2 - w^2 + 3xy + z - y - 7 = 0;", result);
+        }
+
+        [Fact(DisplayName = "Equation: y2(x + 5(y + 5)) - yx")]
+        public void Test10()
+        {
+            var str = "y2(x + 5(y + 5)) - yx";
+
+            var trasformer = new EquationTrasformer();
+
+            Exception ex = Assert.Throws<Exception>(() => trasformer.Transform(str));
+
+            Assert.Equal("Equals not found", ex.Message);
         }
     }
 }

@@ -28,31 +28,6 @@ namespace EquationTransformer
                 throw new Exception("Invalid count of parens");
             }
 
-            var equalsReached = false;
-
-            if (_tokenizer.Token == Token.Equals)
-            {
-                equalsReached = true;
-            }
-            else
-            {                
-                // throw new Exception("Equals not found");
-            }
-
-            List<Summand> rightSummands = new List<Summand>();
-            if (equalsReached)
-            {
-                _tokenizer.NextToken();
-                rightSummands = ParseEquation().ToList();
-            }
-
-            foreach (var s in rightSummands)
-            {
-                s.Multiply(-1);
-            }
-
-            summands.AddRange(rightSummands);
-
             return summands;
         }
 

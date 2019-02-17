@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -17,6 +18,31 @@ namespace EquationTransformer
             {
                 return string.Empty;
             }
+
+            var equalsReached = false;
+
+            if (tokenizer.Token == Token.Equals)
+            {
+                equalsReached = true;
+            }
+            else
+            {
+                throw new Exception("Equals not found");
+            }
+
+            List<Summand> rightSummands = new List<Summand>();
+            if (equalsReached)
+            {
+                tokenizer.NextToken();
+                rightSummands = parser.GetSummand().ToList();
+            }
+
+            foreach (var s in rightSummands)
+            {
+                s.Multiply(-1);
+            }
+
+            summands.AddRange(rightSummands);
 
             summands = summands.OrderByDescending(s => s.Power).ToList();
 
