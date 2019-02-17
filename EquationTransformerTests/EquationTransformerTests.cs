@@ -3,9 +3,14 @@ using Xunit;
 
 namespace EquationTransformerTests
 {
+    /// <summary>
+    /// TODO: I'm too lazy to write display names to other tests in other files.
+    /// It's only test work, after all.
+    /// </summary>
+    [Collection("Full equation transform tests")]
     public class EquationTransformerTests
     {
-        [Fact]
+        [Fact(DisplayName = "Equation: 3x5y = 4y7z")]
         public void Test1()
         {
             var str = "3x5y = 4y7z";
@@ -17,7 +22,7 @@ namespace EquationTransformerTests
             Assert.Equal("15xy - 28yz = 0;", result);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Equation: 3x5y = -4y7z")]
         public void Test11()
         {
             var str = "3x5y = -4y7z";
@@ -29,7 +34,7 @@ namespace EquationTransformerTests
             Assert.Equal("15xy + 28yz = 0;", result);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Equation: 3x5y = 4y7x")]
         public void Test2()
         {
             var str = "3x5y = 4y7x";
@@ -42,7 +47,7 @@ namespace EquationTransformerTests
         }
 
 
-        [Fact]
+        [Fact(DisplayName = "Equation: x^2 + 3.5xy + y = y^2 - xy + y")]
         public void Test3()
         {
             var str = "x^2 + 3.5xy + y = y^2 - xy + y";
@@ -54,7 +59,7 @@ namespace EquationTransformerTests
             Assert.Equal("x^2 - y^2 + 4.5xy = 0;", result);            
         }
 
-        [Fact]
+        [Fact(DisplayName = "Equation: x = y")]
         public void Test4()
         {
             var str = "x = y";
@@ -66,7 +71,7 @@ namespace EquationTransformerTests
             Assert.Equal("x - y = 0;", result);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Equation: x - (y^2 - x) = 0")]
         public void Test5()
         {
             var str = "x - (y^2 - x) = 0";
@@ -78,7 +83,7 @@ namespace EquationTransformerTests
             Assert.Equal("-y^2 + 2x = 0;", result);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Equation: x - (0 - (0 - x)) = 0")]
         public void Test6()
         {
             var str = "x - (0 - (0 - x)) = 0";
@@ -90,7 +95,7 @@ namespace EquationTransformerTests
             Assert.Equal("0 = 0;", result);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Equation: x2 = 3X")]
         public void Test7()
         {
             var str = "x2 = 3X";
