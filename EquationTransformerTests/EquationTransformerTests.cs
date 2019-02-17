@@ -117,8 +117,6 @@ namespace EquationTransformerTests
             var trasformer = new EquationTrasformer();
 
             Exception ex = Assert.Throws<Exception>(() => trasformer.Transform(str));
-
-            Assert.Equal("Invalid count of parens", ex.Message);
         }
 
         [Fact(DisplayName = "Equation: -7 + 4x^2 + xy - x^4 + z = y - 2xy + w^2")]

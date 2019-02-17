@@ -10,7 +10,7 @@ namespace EquationTransformer
         public string Transform(string equation)
         {
             var tokenizer = new Tokenizer(equation);
-            var parser = new Parser(tokenizer);
+            var parser = new Parser2(tokenizer);
 
             var summands = parser.GetSummand().ToList();
 
