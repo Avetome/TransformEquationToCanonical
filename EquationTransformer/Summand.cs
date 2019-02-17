@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
 namespace EquationTransformer
 {
+    [DebuggerDisplay("{ToString(false)}")]
     public class Summand
     {
         private Dictionary<char, int> _variables = new Dictionary<char, int>();
