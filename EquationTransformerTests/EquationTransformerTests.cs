@@ -1,5 +1,6 @@
 ﻿using EquationTransformer;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace EquationTransformerTests
@@ -12,159 +13,78 @@ namespace EquationTransformerTests
     [Collection("Full equation transform tests")]
     public class EquationTransformerTests
     {
-        [Fact(DisplayName = "Equation: 3x5y = 4y7z")]
-        public void Test1()
+        [Theory(DisplayName = "Can transform equation to canonical form")]
+        [MemberData(nameof(GetEquations))]
+        public void TransformEquationTest(string equation, string equationInCanonicalForm)
         {
-            var str = "3x5y = 4y7z";
-
             var trasformer = new EquationTrasformer();
 
-            var result = trasformer.Transform(str);
+            var result = trasformer.Transform(equation);
 
-            Assert.Equal("15xy - 28yz = 0;", result);
+            Assert.Equal(equationInCanonicalForm, result);
         }
 
-        [Fact(DisplayName = "Equation: 3x5y = -4y7z")]
-        public void Test11()
+        [Theory(DisplayName = "Should raise exception if equation is invalid")]
+        [MemberData(nameof(GetInvalidEquations))]
+        public void TransformEquationExceptionTest(string equation)
         {
-            var str = "3x5y = -4y7z";
-
             var trasformer = new EquationTrasformer();
 
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("15xy + 28yz = 0;", result);
+            Exception ex = Assert.Throws<Exception>(() => trasformer.Transform(equation));
         }
 
-        [Fact(DisplayName = "Equation: 3x5y = 4y7x")]
-        public void Test2()
+        public static IEnumerable<object[]> GetEquations()
         {
-            var str = "3x5y = 4y7x";
+            yield return new object[] {
+                "3x5y = 4y7z",
+                "15xy - 28yz = 0;" };
 
-            var trasformer = new EquationTrasformer();
+            yield return new object[] {
+                "3x5y = -4y7z",
+                "15xy + 28yz = 0;" };
 
-            var result = trasformer.Transform(str);
+            yield return new object[] {
+                "3x5y = 4y7x",
+                "-13xy = 0;" };
 
-            Assert.Equal("-13xy = 0;", result);
+            yield return new object[] {
+                "x^2 + 3.5xy + y = y^2 - xy + y",
+                "x^2 - y^2 + 4.5xy = 0;" };
+
+            yield return new object[] {
+                "x = y",
+                "x - y = 0;" };
+
+            yield return new object[] {
+                "x - (y^2 - x) = 0",
+                "-y^2 + 2x = 0;" };
+
+            yield return new object[] {
+                "x - (0 - (0 - x)) = 0",
+                "0 = 0;" };
+
+            yield return new object[] {
+                "x2 = 3X",
+                "-x = 0;" };
+
+            yield return new object[] {
+                "-7 + 4x^2 + xy - x^4 + z = y - 2xy + w^2",
+                "-x^4 + 4x^2 - w^2 + 3xy + z - y - 7 = 0;" };
+
+            yield return new object[] {
+                "2 - 1 = x",
+                "-x + 1 = 0;" };
+
+            yield return new object[] {
+                "x^-1 = 5",
+                "x^-1 - 5 = 0;" };
         }
 
-
-        [Fact(DisplayName = "Equation: x^2 + 3.5xy + y = y^2 - xy + y")]
-        public void Test3()
+        public static IEnumerable<object[]> GetInvalidEquations()
         {
-            var str = "x^2 + 3.5xy + y = y^2 - xy + y";
+            yield return new object[] { "y2(x + 5(y + ) = yx" };
 
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("x^2 - y^2 + 4.5xy = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: x = y")]
-        public void Test4()
-        {
-            var str = "x = y";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("x - y = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: x - (y^2 - x) = 0")]
-        public void Test5()
-        {
-            var str = "x - (y^2 - x) = 0";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("-y^2 + 2x = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: x - (0 - (0 - x)) = 0")]
-        public void Test6()
-        {
-            var str = "x - (0 - (0 - x)) = 0";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("0 = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: x2 = 3X")]
-        public void Test7()
-        {
-            var str = "x2 = 3X";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("-x = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: y2(x + 5(y + ) = yx")]
-        public void Test8()
-        {
-            var str = "y2(x + 5(y + ) = yx";
-
-            var trasformer = new EquationTrasformer();
-
-            Exception ex = Assert.Throws<Exception>(() => trasformer.Transform(str));
-        }
-
-        [Fact(DisplayName = "Equation: -7 + 4x^2 + xy - x^4 + z = y - 2xy + w^2")]
-        public void Test9()
-        {
-            var str = "-7 + 4x^2 + xy - x^4 + z = y - 2xy + w^2";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("-x^4 + 4x^2 - w^2 + 3xy + z - y - 7 = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: y2(x + 5(y + 5)) - yx")]
-        public void Test10()
-        {
-            var str = "y2(x + 5(y + 5)) - yx";
-
-            var trasformer = new EquationTrasformer();
-
-            Exception ex = Assert.Throws<Exception>(() => trasformer.Transform(str));
-
-            Assert.Equal("Equals not found", ex.Message);
-        }
-
-        [Fact(DisplayName = "Equation: 2 - 1 = x")]
-        public void Test12()
-        {
-            var str = "2 - 1 = x";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("-x + 1 = 0;", result);
-        }
-
-        [Fact(DisplayName = "Equation: x^-1 = 5")]
-        public void Test13()
-        {
-            var str = "x^-1 = 5";
-
-            var trasformer = new EquationTrasformer();
-
-            var result = trasformer.Transform(str);
-
-            Assert.Equal("x^-1 - 5 = 0;", result);
+            yield return new object[] { "y2(x + 5(y + 5)) - yx" };
         }
     }
 }
