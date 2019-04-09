@@ -8,7 +8,7 @@ namespace EquationTransformerTests
 {
     public class Parser2Tests
     {
-        [Theory(DisplayName = "Can parse simple summand with numbers, variables and unary operator")]
+        [Theory(DisplayName = "Can parse one summand with numbers, variables and unary operator")]
         [MemberData(nameof(GetNumbers))]
         [MemberData(nameof(GetVariable))]
         [MemberData(nameof(GetVariableWithUnaryOperator))]
@@ -24,7 +24,7 @@ namespace EquationTransformerTests
             CompareSummand(answer, summand);
         }
 
-        [Theory(DisplayName = "Can parse equation with operands")]
+        [Theory(DisplayName = "Can parse equation with several summands")]
         [MemberData(nameof(GetSimpleEquation))]
         [MemberData(nameof(GetEquationWithBrackets))]
         [MemberData(nameof(GetEquationWithBracketsWithMultiplier))]
@@ -44,7 +44,7 @@ namespace EquationTransformerTests
             }
         }
 
-        [Theory(DisplayName = "Can't parse equation abcent operands or unclosed brackets")]
+        [Theory(DisplayName = "Can't parse equation with abcent operands or unclosed brackets")]
         [MemberData(nameof(GetEquationsWithInvalidBracketsCount))]
         [MemberData(nameof(GetEquationsWithInvalidOperands))]
         public void ErrorParsing(string equations)
