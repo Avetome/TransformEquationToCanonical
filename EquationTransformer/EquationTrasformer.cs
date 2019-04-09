@@ -26,7 +26,7 @@ namespace EquationTransformer
 
             tokenizer.NextToken();
 
-            List<Summand> rightSummands = new List<Summand>();            
+            List<Summand> rightSummands = new List<Summand>();
             rightSummands = parser.GetSummand().ToList();
 
             foreach (var s in rightSummands)
@@ -75,7 +75,8 @@ namespace EquationTransformer
                     }
                 }
 
-                if (currentSummand.Multiplier != 0)
+                // currentSummand.Multiplier > 0
+                if (!(Math.Abs(currentSummand.Multiplier) < double.Epsilon))
                 {
                     result.Add(currentSummand);
                 }
@@ -98,6 +99,7 @@ namespace EquationTransformer
             for (var i = 1; i < summands.Count; i++)
             {
                 if (summands[i].Multiplier > 0)
+                // if (!(Math.Abs(summands[i].Multiplier) < double.Epsilon))
                 {
                     sb.Append($" + {summands[i].ToString()}");
                 }
