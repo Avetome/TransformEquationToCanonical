@@ -75,7 +75,7 @@ namespace EquationTransformer
                     }
                 }
 
-                // currentSummand.Multiplier > 0
+                // currentSummand.Multiplier != 0
                 if (!(Math.Abs(currentSummand.Multiplier) < double.Epsilon))
                 {
                     result.Add(currentSummand);
@@ -98,8 +98,8 @@ namespace EquationTransformer
 
             for (var i = 1; i < summands.Count; i++)
             {
-                if (summands[i].Multiplier > 0)
-                // if (!(Math.Abs(summands[i].Multiplier) < double.Epsilon))
+                // summands[i].Multiplier > 0.0
+                if (summands[i].Multiplier > double.Epsilon)
                 {
                     sb.Append($" + {summands[i].ToString()}");
                 }
