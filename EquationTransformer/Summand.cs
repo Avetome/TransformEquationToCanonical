@@ -13,7 +13,7 @@ namespace EquationTransformer
 
         private int _maxPower = 0;
 
-        public double Multiplier { get; set; }
+        public double Multiplier { get; set; } = 1;
 
         public int Power => _maxPower;
 

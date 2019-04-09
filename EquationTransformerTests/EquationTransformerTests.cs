@@ -58,7 +58,7 @@ namespace EquationTransformerTests
 
             var result = trasformer.Transform(str);
 
-            Assert.Equal("x^2 - y^2 + 4.5xy = 0;", result);            
+            Assert.Equal("x^2 - y^2 + 4.5xy = 0;", result);
         }
 
         [Fact(DisplayName = "Equation: x = y")]

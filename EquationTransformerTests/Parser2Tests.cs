@@ -1,5 +1,6 @@
 ﻿using EquationTransformer;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -7,763 +8,242 @@ namespace EquationTransformerTests
 {
     public class Parser2Tests
     {
-        [Fact]
-        public void Test1()
+        [Theory(DisplayName = "Can parse simple summand with numbers, variables and unary operator")]
+        [MemberData(nameof(GetNumbers))]
+        [MemberData(nameof(GetVariable))]
+        [MemberData(nameof(GetVariableWithUnaryOperator))]
+        [MemberData(nameof(GetSimpleSummandsWithMultiplier))]
+        [MemberData(nameof(GetSimpleSummandsWithStarMultiplierSign))]
+        [MemberData(nameof(GetSimpleSummandsWithPower))]
+        public void ParseSimpleOperands(string equations, Summand answer)
         {
-            var str = "3x5y";
-
-            var parser = new Parser2(str);
+            var parser = new Parser2(equations);
 
             var summand = parser.GetSummand().First();
 
-            Assert.Equal(15, summand.Multiplier);
-            Assert.Equal(2, summand.Variables.Count);
-            Assert.True(summand.Variables.ContainsKey('x'));
-            Assert.True(summand.Variables.ContainsKey('y'));
+            CompareSummand(answer, summand);
         }
 
-        [Fact]
-        public void Test2()
+        [Theory(DisplayName = "Can parse equation with operands")]
+        [MemberData(nameof(GetSimpleEquation))]
+        [MemberData(nameof(GetEquationWithBrackets))]
+        [MemberData(nameof(GetEquationWithBracketsWithMultiplier))]
+        [MemberData(nameof(GetEquationWithUnaryOperator))]
+        [MemberData(nameof(GetComplexEquation))]
+        public void ParseTestSimpleEquation(string equations, List<Summand> answer)
         {
-            var str = "x^2";
+            var parser = new Parser2(equations);
 
-            var parser = new Parser2(str);
+            var summands = parser.GetSummand().ToList();
 
-            var summand = parser.GetSummand().First();
+            Assert.Equal(answer.Count(), summands.Count());
 
-            Assert.Equal(1, summand.Multiplier);
-            Assert.Single(summand.Variables);
-            Assert.True(summand.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand.Variables['x']);
+            for (var i = 0; i < answer.Count(); i++)
+            {
+                CompareSummand(answer[i], summands[i]);
+            }
         }
 
-        [Fact]
-        public void Test3()
+        [Theory(DisplayName = "Can't parse equation abcent operands or unclosed brackets")]
+        [MemberData(nameof(GetEquationsWithInvalidBracketsCount))]
+        [MemberData(nameof(GetEquationsWithInvalidOperands))]
+        public void ErrorParsing(string equations)
         {
-            var str = "yx^2";
-
-            var parser = new Parser2(str);
-
-            var summand = parser.GetSummand().First();
-
-            Assert.Equal(1, summand.Multiplier);
-            Assert.Equal(2, summand.Variables.Count);
-            Assert.True(summand.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand.Variables['x']);
-            Assert.True(summand.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand.Variables['y']);
-        }
-
-        [Fact]
-        public void Test4()
-        {
-            var str = "y2 * 10";
-
-            var parser = new Parser2(str);
-
-            var summand = parser.GetSummand().First();
-
-            Assert.Equal(20, summand.Multiplier);
-            Assert.Single(summand.Variables);
-            Assert.True(summand.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand.Variables['y']);
-        }
-
-        [Fact]
-        public void Test5()
-        {
-            var str = "2y + -x";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-
-            var summand1 = summands.ElementAt(0);
-            var summand2 = summands.ElementAt(1);
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(-1, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-        }
-
-        [Fact]
-        public void Test6()
-        {
-            var str = "2y + -+-+-x";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-
-            var summand1 = summands.ElementAt(0);
-            var summand2 = summands.ElementAt(1);
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(-1, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-        }
-
-        [Fact]
-        public void Test7()
-        {
-            var str = "x^2 + 2x";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand1.Variables['x']);
-
-            Assert.Equal(2, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-        }
-
-        [Fact]
-        public void Test8()
-        {
-            var str = "x^2 - 2x";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand1.Variables['x']);
-
-            Assert.Equal(-2, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-        }
-
-        [Fact]
-        public void Test9()
-        {
-            var str = "x2 - 3y";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand1.Variables['x']);
-
-            Assert.Equal(-3, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand2.Variables['y']);
-        }
-
-        [Fact]
-        public void Test10()
-        {
-            var str = "x2 + 4 - 3y";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand1.Variables['x']);
-
-            Assert.Equal(4, summand2.Multiplier);
-            Assert.Equal(0, summand2.Variables.Count);
-
-            Assert.Equal(-3, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
-        }
-
-        [Fact]
-        public void Test12()
-        {
-            var str = "y^2 - xy + y";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(2, summand1.Variables['y']);
-
-            Assert.Equal(-1, summand2.Multiplier);
-            Assert.Equal(2, summand2.Variables.Count);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-            Assert.True(summand2.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand2.Variables['y']);
-
-            Assert.Equal(1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
-        }
-
-        [Fact]
-        public void Test13()
-        {
-            var str = "y2* + y";
-
-            var parser = new Parser2(str);
-
-            Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
-
-            Assert.Equal("Invalid multiplication", ex.Message);
-        }
-
-        [Fact]
-        public void Test14()
-        {
-            var str = "y2 - (5 + x)";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(-5, summand2.Multiplier);
-            Assert.Empty(summand2.Variables);
-
-            Assert.Equal(-1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
-        }
-
-        [Fact]
-        public void Test15()
-        {
-            var str = "y2 + x(x + 2)";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(1, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand2.Variables['x']);
-
-            Assert.Equal(2, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
-        }
-
-        [Fact]
-        public void Test16()
-        {
-            var str = "y2 + x(x + 2)y";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(1, summand2.Multiplier);
-            Assert.Equal(2, summand3.Variables.Count);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand2.Variables['x']);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
-
-            Assert.Equal(2, summand3.Multiplier);
-            Assert.Equal(2, summand3.Variables.Count);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
-        }
-
-        [Fact]
-        public void Test17()
-        {
-            var str = "y2 +";
-
-            var parser = new Parser2(str);
+            var parser = new Parser2(equations);
 
             Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
         }
 
-        [Fact]
-        public void Test18()
+        public static IEnumerable<object[]> GetEquationsWithInvalidBracketsCount()
         {
-            var str = "y2 *";
-
-            var parser = new Parser2(str);
-
-            Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
+            yield return new object[] { "y2(" };
+            yield return new object[] { "y2(x + 5(y + )" };
         }
 
-        [Fact]
-        public void Test19()
+        public static IEnumerable<object[]> GetEquationsWithInvalidOperands()
         {
-            var str = "y2(";
-
-            var parser = new Parser2(str);
-
-            Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
+            yield return new object[] { "y2 *" };
+            yield return new object[] { "y2 +" };
+            yield return new object[] { "y2* + y" };
         }
 
-        [Fact]
-        public void Test20()
+        public static IEnumerable<object[]> GetNumbers()
         {
-            var str = "y2(x + 5(y + )";
-
-            var parser = new Parser2(str);
-
-            Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
+            yield return new object[] { "5", CreateSummand(5) };
+            yield return new object[] { "-10", CreateSummand(-10) };
         }
 
-        [Fact]
-        public void Test21()
+        public static IEnumerable<object[]> GetVariable()
         {
-            var str = "y2 + (5 + x)";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(5, summand2.Multiplier);
-            Assert.Empty(summand2.Variables);
-
-            Assert.Equal(1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
+            yield return new object[] { "y", CreateSummand(('y', 1)) };
+            yield return new object[] { "x", CreateSummand(('x', 1)) };
+            yield return new object[] { "yx", CreateSummand(('y', 1), ('x', 1)) };
+        }
+        public static IEnumerable<object[]> GetVariableWithUnaryOperator()
+        {
+            yield return new object[] { "-y", CreateSummand(-1, ('y', 1)) };
+            yield return new object[] { "-yx", CreateSummand(-1, ('y', 1), ('x', 1)) };
         }
 
-        [Fact]
-        public void Test22()
+        public static IEnumerable<object[]> GetSimpleSummandsWithMultiplier()
         {
-            var str = "y2 - (5 + x)";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(-5, summand2.Multiplier);
-            Assert.Empty(summand2.Variables);
-
-            Assert.Equal(-1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
+            yield return new object[] { "2y", CreateSummand(2, ('y', 1)) };
+            yield return new object[] { "-5x", CreateSummand(-5, ('x', 1)) };
+            yield return new object[] { "3x5y", CreateSummand(15, ('x', 1), ('y', 1)) };
+            yield return new object[] { "x2X", CreateSummand(2, ('x', 2)) };
         }
 
-        [Fact]
-        public void Test23()
+        public static IEnumerable<object[]> GetSimpleSummandsWithStarMultiplierSign()
         {
-            var str = "x - (y^2 - x)";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand1.Variables['x']);
-
-            Assert.Equal(-1, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('y'));
-            Assert.Equal(2, summand2.Variables['y']);
-
-            Assert.Equal(1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
+            yield return new object[] { "y2 * 10", CreateSummand(20, ('y', 1)) };
+            yield return new object[] { "5*2x", CreateSummand(10, ('x', 1)) };
+            yield return new object[] { "x^2 * y^3", CreateSummand(('x', 2), ('y', 3)) };
         }
 
-        [Fact]
-        public void Test24()
+        public static IEnumerable<object[]> GetSimpleSummandsWithPower()
         {
-            var str = "y2 - (5 - x)";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            Assert.Equal(3, summands.Count());
-
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(-5, summand2.Multiplier);
-            Assert.Empty(summand2.Variables);
-
-            Assert.Equal(1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
+            yield return new object[] { "y^2", CreateSummand(('y', 2)) };
+            yield return new object[] { "yx^5", CreateSummand(('x', 5), ('y', 1)) };
+            yield return new object[] { "y^7x^5", CreateSummand(('x', 5), ('y', 7)) };
         }
 
-        [Fact]
-        public void Test25()
+        public static IEnumerable<object[]> GetSimpleEquation()
         {
-            var str = "y2 + x(x + 2)";
+            var summands = new List<Summand>();
+            summands.Add(CreateSummand(('x', 2)));
+            summands.Add(CreateSummand(2, ('x', 1)));
+            yield return new object[] { "x^2 + 2x", summands };
 
-            var parser = new Parser2(str);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(('x', 2)));
+            summands.Add(CreateSummand(-2, ('x', 1)));
+            yield return new object[] { "x^2 - 2x", summands };
 
-            var summands = parser.GetSummand();
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('x', 1)));
+            summands.Add(CreateSummand(-3, ('y', 1)));
+            yield return new object[] { "x2 - 3y", summands };
 
-            Assert.Equal(3, summands.Count());
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('x', 1)));
+            summands.Add(CreateSummand(-3, ('x', 1)));
+            yield return new object[] { "x2 - 3X", summands };
 
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('x', 1)));
+            summands.Add(CreateSummand(4));
+            summands.Add(CreateSummand(-3, ('y', 1)));
+            yield return new object[] { "x2 + 4 - 3y", summands };
 
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(1, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand2.Variables['x']);
-
-            Assert.Equal(2, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(('y', 2)));
+            summands.Add(CreateSummand(-1, ('x', 1), ('y', 1)));
+            summands.Add(CreateSummand(('y', 1)));
+            yield return new object[] { "y ^ 2 - xy + y", summands };
         }
 
-        [Fact]
-        public void Test26()
+        public static IEnumerable<object[]> GetEquationWithBrackets()
         {
-            var str = "y2 - -(5 - x)";
+            var summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(5));
+            summands.Add(CreateSummand(('x', 1)));
+            yield return new object[] { "y2 + (5 + x)", summands };
 
-            var parser = new Parser2(str);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(-5));
+            summands.Add(CreateSummand(-1, ('x', 1)));
+            yield return new object[] { "y2 - (5 + x)", summands };
 
-            var summands = parser.GetSummand();
-            Assert.Equal(3, summands.Count());
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(-5));
+            summands.Add(CreateSummand(('x', 1)));
+            yield return new object[] { "y2 - (5 - x)", summands };
 
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand1.Variables['y']);
-
-            Assert.Equal(5, summand2.Multiplier);
-            Assert.Empty(summand2.Variables);
-
-            Assert.Equal(-1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand3.Variables['x']);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(('x', 1)));
+            summands.Add(CreateSummand(-1, ('y', 2)));
+            summands.Add(CreateSummand(('x', 1)));
+            yield return new object[] { "x - (y ^ 2 - x)", summands };
         }
 
-        [Fact]
-        public void Test28()
+        public static IEnumerable<object[]> GetEquationWithBracketsWithMultiplier()
         {
-            var str = "x^2 + 2x";
+            var summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(('x', 2)));
+            summands.Add(CreateSummand(2, ('x', 1)));
+            yield return new object[] { "y2 + x(x + 2)", summands };
 
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand1.Variables['x']);
-
-            Assert.Equal(2, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(('x', 2), ('y', 1)));
+            summands.Add(CreateSummand(2, ('x', 1), ('y', 1)));
+            yield return new object[] { "y2 + x(x + 2)y", summands };
         }
 
-        [Fact]
-        public void Test29()
+        public static IEnumerable<object[]> GetEquationWithUnaryOperator()
         {
-            var str = "x^2 - 2x";
+            var summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(-1, ('x', 1)));
+            yield return new object[] { "2y + -x", summands };
 
-            var parser = new Parser2(str);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(-1, ('x', 1)));
+            yield return new object[] { "2y + -+-+-x", summands };
 
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand1.Variables['x']);
-
-            Assert.Equal(-2, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
+            summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('y', 1)));
+            summands.Add(CreateSummand(5));
+            summands.Add(CreateSummand(-1, ('x', 1)));
+            yield return new object[] { "y2 - -(5 - x)", summands };
         }
 
-        [Fact]
-        public void Test30()
+        public static IEnumerable<object[]> GetComplexEquation()
         {
-            var str = "x2 - 3y";
+            var summands = new List<Summand>();
+            summands.Add(CreateSummand(2, ('x', 4)));
+            summands.Add(CreateSummand(3, ('x', 1), ('y', 1)));
+            summands.Add(CreateSummand(-6, ('x', 2), ('y', 1)));
+            summands.Add(CreateSummand(5, ('x', 1), ('y', 2)));
+            summands.Add(CreateSummand(-3, ('x', 1), ('y', 1)));
+            summands.Add(CreateSummand(15, ('y', 2)));
 
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand1.Variables['x']);
-
-            Assert.Equal(-3, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand2.Variables['y']);
+            yield return new object[] { "2x^4 + 3xy - (6x^2y + -5xy^2 + 3y(x - 5y))", summands };
         }
 
-        [Fact]
-        public void Test31()
+        private static void CompareSummand(Summand a, Summand b)
         {
-            var str = "x2 + 4 - 3y";
+            Assert.Equal(a.Multiplier, b.Multiplier);
+            Assert.Equal(a.Variables.Count, b.Variables.Count);
 
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand1.Variables['x']);
-
-            Assert.Equal(4, summand2.Multiplier);
-            Assert.Equal(0, summand2.Variables.Count);
-
-            Assert.Equal(-3, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
+            foreach (KeyValuePair<char, int> item in a.Variables)
+            {
+                Assert.True(b.Variables.ContainsKey(item.Key));
+                Assert.Equal(a.Variables[item.Key], b.Variables[item.Key]);
+            }
         }
 
-        [Fact]
-        public void Test32()
+        private static Summand CreateSummand(params (char name, int power)[] variables)
         {
-            var str = "y^2 - xy + y";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.Last();
-
-            Assert.Equal(1, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('y'));
-            Assert.Equal(2, summand1.Variables['y']);
-
-            Assert.Equal(-1, summand2.Multiplier);
-            Assert.Equal(2, summand2.Variables.Count);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-            Assert.True(summand2.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand2.Variables['y']);
-
-            Assert.Equal(1, summand3.Multiplier);
-            Assert.Single(summand3.Variables);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
+            return CreateSummand(1, variables);
         }
 
-        [Fact]
-        public void Test33()
+        private static Summand CreateSummand(double multiplier, params (char name, int power)[] variables)
         {
-            var str = "2x^4 + 3xy - (6x^2y + -5xy^2 + 3y(x - 5y))";
+            var summand = new Summand();
+            summand.Multiplier = multiplier;
 
-            var parser = new Parser2(str);
+            foreach (var variable in variables)
+            {
+                summand.AddVariable(variable.name, variable.power);
+            }
 
-            var summands = parser.GetSummand();
-            var summand1 = summands.ElementAt(0);
-            var summand2 = summands.ElementAt(1);
-            var summand3 = summands.ElementAt(2);
-            var summand4 = summands.ElementAt(3);
-            var summand5 = summands.ElementAt(4);
-            var summand6 = summands.ElementAt(5);
-
-            Assert.Equal(6, summands.Count());
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(4, summand1.Variables['x']);
-
-            Assert.Equal(3, summand2.Multiplier);
-            Assert.Equal(2, summand2.Variables.Count);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
-            Assert.True(summand2.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand2.Variables['y']);
-
-            Assert.Equal(-6, summand3.Multiplier);
-            Assert.Equal(2, summand3.Variables.Count);
-            Assert.True(summand3.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand3.Variables['x']);
-            Assert.True(summand3.Variables.ContainsKey('y'));
-            Assert.Equal(1, summand3.Variables['y']);
-
-            Assert.Equal(5, summand4.Multiplier);
-            Assert.Equal(2, summand4.Variables.Count);
-            Assert.True(summand4.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand4.Variables['x']);
-            Assert.True(summand4.Variables.ContainsKey('y'));
-            Assert.Equal(2, summand4.Variables['y']);
-
-            Assert.Equal(15, summand6.Multiplier);
-            Assert.Single(summand6.Variables);
-            Assert.True(summand6.Variables.ContainsKey('y'));
-            Assert.Equal(2, summand6.Variables['y']);
-        }
-
-        [Fact]
-        public void Test34()
-        {
-            var str = "x2X";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(2, summand1.Variables['x']);
-        }
-
-        [Fact]
-        public void Test35()
-        {
-            var str = "x2 - 3X";
-
-            var parser = new Parser2(str);
-
-            var summands = parser.GetSummand();
-            var summand1 = summands.First();
-            var summand2 = summands.Last();
-
-            Assert.Equal(2, summand1.Multiplier);
-            Assert.Single(summand1.Variables);
-            Assert.True(summand1.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand1.Variables['x']);
-
-            Assert.Equal(-3, summand2.Multiplier);
-            Assert.Single(summand2.Variables);
-            Assert.True(summand2.Variables.ContainsKey('x'));
-            Assert.Equal(1, summand2.Variables['x']);
+            return summand;
         }
     }
 }

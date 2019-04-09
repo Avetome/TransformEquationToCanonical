@@ -80,7 +80,7 @@ namespace EquationTransformerTests
             s1.AddVariable('x', 2);
             s1.AddVariable('y', 2);
             s1.AddVariable('z', 2);
-                        
+
             Assert.Equal("2x^2y^2z^2", s1.ToString());
         }
 
