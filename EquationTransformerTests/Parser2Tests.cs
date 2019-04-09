@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EquationTransformerTests
 {
-    public class Parser2Tests
+    public class ParserTests
     {
         [Theory(DisplayName = "Can parse one summand with numbers, variables and unary operator")]
         [MemberData(nameof(GetNumbers))]
@@ -19,7 +19,7 @@ namespace EquationTransformerTests
         [MemberData(nameof(GetSimpleSummandsWithNegativePower))]
         public void ParseSimpleOperands(string equations, Summand answer)
         {
-            var parser = new Parser2(equations);
+            var parser = new Parser(equations);
 
             var summand = parser.GetSummand().First();
 
@@ -34,7 +34,7 @@ namespace EquationTransformerTests
         [MemberData(nameof(GetComplexEquation))]
         public void ParseTestSimpleEquation(string equations, List<Summand> answer)
         {
-            var parser = new Parser2(equations);
+            var parser = new Parser(equations);
 
             var summands = parser.GetSummand().ToList();
 
@@ -51,7 +51,7 @@ namespace EquationTransformerTests
         [MemberData(nameof(GetEquationsWithInvalidOperands))]
         public void ErrorParsing(string equations)
         {
-            var parser = new Parser2(equations);
+            var parser = new Parser(equations);
 
             Exception ex = Assert.Throws<Exception>(() => parser.GetSummand().First());
         }

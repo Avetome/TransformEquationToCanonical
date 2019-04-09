@@ -8,7 +8,6 @@ namespace EquationTransformer
     public class Parser
     {
         private Tokenizer _tokenizer;
-        private int _parensCount = 0;
 
         public Parser(Tokenizer tokenizer)
         {
@@ -21,111 +20,171 @@ namespace EquationTransformer
 
         public IEnumerable<Summand> GetSummand()
         {
-            var summands = ParseEquation().ToList();
-
-            if (_parensCount != 0)
-            {
-                throw new Exception("Invalid count of parens");
-            }
-
-            return summands;
-        }
-
-        private IEnumerable<Summand> ParseEquation(sbyte sign = 1, bool isInBrackets = false)
-        {
             var result = new List<Summand>();
 
-            Summand lastSummand;
-            while(true)
+            result = ParseAddAndSubstract();
+
+            if (_tokenizer.Token != Token.EOF
+                && _tokenizer.Token != Token.Equals)
             {
-                var summand = ParseSummand();
-                
-                if (summand != null)
+                throw new Exception("Unexpected characters at end of equation");
+            }
+
+            return result;
+        }
+
+        private List<Summand> ParseAddAndSubstract()
+        {
+            var leftSummands = ParseMultiply();
+
+            while (true)
+            {
+                if (_tokenizer.Token != Token.Subtract
+                    && _tokenizer.Token != Token.Add)
                 {
-                    result.Add(summand);
-                    summand.Multiplier *= sign;
+                    return leftSummands;
+                }
+
+                var sign = 1;
+
+                if (_tokenizer.Token == Token.Subtract)
+                {
+                    sign = -1;
+                }
+
+                _tokenizer.NextToken();
+
+                var rightSummands = ParseMultiply();
+
+                if (sign == -1)
+                {
+                    foreach (var s in rightSummands)
+                    {
+                        s.Multiply(-1);
+                    }
+                }
+
+                leftSummands.AddRange(rightSummands);
+            }
+        }
+
+        private List<Summand> ParseMultiply()
+        {
+            var leftSummands = ParseUnary();
+
+            while (true)
+            {
+                if (_tokenizer.Token != Token.Multiply
+                    && _tokenizer.Token != Token.Number
+                    && _tokenizer.Token != Token.Variable
+                    && _tokenizer.Token != Token.OpenParens)
+                {
+                    return leftSummands;
+                }
+
+                if (_tokenizer.Token == Token.Multiply)
+                {
+                    _tokenizer.NextToken();
+                }
+
+                var rightSummands = ParseUnary();
+
+                Summand localSummand = null;
+
+                if (rightSummands.Count == 1)
+                {
+                    localSummand = rightSummands.First();
+                }
+                else if (leftSummands.Count == 1)
+                {
+                    localSummand = leftSummands.First();
+                }
+
+                // (x + y)(z + y) - for example. 
+                if (localSummand == null)
+                {
+                    throw new Exception("Multiplying two parent expressions it not supported");
+                }
+
+                if (leftSummands.Count == 1)
+                {
+                    leftSummands = rightSummands;
+                }
+
+                foreach(var summand in leftSummands)
+                {
+                    summand.Multiply(localSummand);
+                }
+            }
+        }
+
+        private List<Summand> ParseUnary()
+        {
+            while (true)
+            {
+                // Skip '+' - it don't matter in this case
+                if (_tokenizer.Token == Token.Add)
+                {
+                    _tokenizer.NextToken();
+                    continue;
                 }
 
                 if (_tokenizer.Token == Token.Subtract)
                 {
-                    sign *= -1;
-                }
-
-                if (_tokenizer.Token == Token.Add)
-                {
-                    sign = 1;
-                }
-
-                if (_tokenizer.Token == Token.EOF
-                    || _tokenizer.Token == Token.Equals)
-                {
-                    return result;
-                }
-
-                if (_tokenizer.Token == Token.CloseParens)
-                {
-                    _parensCount--;
-                    return result;
-                }
-
-                if (_tokenizer.Token == Token.OpenParens)
-                {
-                    var prevToken = _tokenizer.PrevToken;
-
                     _tokenizer.NextToken();
-                    _parensCount++;                   
 
-                    var summands = ParseEquation(1, true);
+                    // Parse right side
+                    // Recurses to support negative of a negative
+                    var rightSummands = ParseUnary();
 
-                    if (prevToken == Token.Number
-                        || prevToken == Token.Variable
-                        || prevToken == Token.Multiply)
+                    foreach (var s in rightSummands)
                     {
-                        var multiplier = result.Last();
-
-                        result.RemoveAt(result.Count - 1);
-
-                        if (multiplier != null)
-                        {
-                            foreach(var s in summands)
-                            {
-                                s.Multiply(summand);
-                            }
-                        }
+                        s.Multiply(-1);
                     }
 
-                    if (prevToken == Token.Subtract)
-                    {
-                        foreach (var s in summands)
-                        {
-                            s.Multiply(-1);
-                        }
-                    }
-
-                    result.AddRange(summands);
+                    return rightSummands;
                 }
 
-                _tokenizer.NextToken();
+                // No positive/negative operator so parse a alone summand
+                return ParseSummands();
             }
         }
 
-        private Summand ParseSummand()
+        private List<Summand> ParseSummands()
         {
             if (_tokenizer.Token != Token.Number
-                && _tokenizer.Token != Token.Variable
-                && _tokenizer.Token != Token.Subtract)
+                    && _tokenizer.Token != Token.Variable
+                    && _tokenizer.Token != Token.OpenParens)
             {
-                return null;
+                // Upon the village, cross the sky
+                // Creepy gizmo’s flying by
+                // There’s excess in those days
+                // of such gizmos anyways
+                // http://chastushki.net.ru/texts/22
+                // P.S. Don't get me wrong...
+                throw new Exception($"Unexpect token: {_tokenizer.Token}");
             }
+
+            if (_tokenizer.Token == Token.OpenParens)
+            {
+                _tokenizer.NextToken();
+
+                var summands = ParseAddAndSubstract();
+
+                if (_tokenizer.Token != Token.CloseParens)
+                {
+                    throw new Exception("Invalid count of parens");
+                }
+
+                _tokenizer.NextToken();
+
+                return summands;
+            }
+
+            var result = new List<Summand>();
 
             var summand = new Summand();
             summand.Multiplier = 1;
-
-            if (_tokenizer.Token == Token.Subtract)
-            {
-                summand.Multiplier = -1;
-                _tokenizer.NextToken();
-            }
 
             bool isValidSummand = false;
 
@@ -144,6 +203,8 @@ namespace EquationTransformer
                 // skip '*'
                 if (_tokenizer.Token == Token.Multiply)
                 {
+                    isValidSummand = false;
+
                     _tokenizer.NextToken();
                     continue;
                 }
@@ -159,7 +220,16 @@ namespace EquationTransformer
                     continue;
                 }
 
-                return isValidSummand ? summand : null;
+                if (isValidSummand)
+                {
+                    result.Add(summand);
+                }
+                else
+                {
+                    throw new Exception("Invalid multiplication");
+                }                
+
+                return result;
             }
         }
     }
