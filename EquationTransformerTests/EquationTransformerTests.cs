@@ -154,5 +154,17 @@ namespace EquationTransformerTests
 
             Assert.Equal("-x + 1 = 0;", result);
         }
+
+        [Fact(DisplayName = "Equation: x^-1 = 5")]
+        public void Test13()
+        {
+            var str = "x^-1 = 5";
+
+            var trasformer = new EquationTrasformer();
+
+            var result = trasformer.Transform(str);
+
+            Assert.Equal("x^-1 - 5 = 0;", result);
+        }
     }
 }

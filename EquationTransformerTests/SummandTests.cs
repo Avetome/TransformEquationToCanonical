@@ -11,6 +11,8 @@ namespace EquationTransformerTests
         [Theory(DisplayName = "Summands ToString() get readable and correct stringified summand")]
         [MemberData(nameof(GetSimpleNumbersAndVariables))]
         [MemberData(nameof(GetSummandsWithPower))]
+        [MemberData(nameof(GetSummandsWithNegativePower))]
+        [MemberData(nameof(GetSummandsWithZeroPower))]
         [MemberData(nameof(GetSummandsToCheckCorrectVariablesSorting))]
         [MemberData(nameof(GetSummandsToCheckSpecialMultipliers))]
         public void SummandsToStringTests(Summand summand, string stringifiedSummand)
@@ -51,6 +53,19 @@ namespace EquationTransformerTests
         {
             yield return new object[] { SummandsHelper.CreateSummand(('y', 2)), "y^2" };
             yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2)), "-y^2" };
+        }
+
+        public static IEnumerable<object[]> GetSummandsWithNegativePower()
+        {
+            yield return new object[] { SummandsHelper.CreateSummand(('y', -1)), "y^-1" };
+            yield return new object[] { SummandsHelper.CreateSummand(('y', -2)), "y^-2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', -2)), "-y^-2" };
+        }
+
+        public static IEnumerable<object[]> GetSummandsWithZeroPower()
+        {
+            yield return new object[] { SummandsHelper.CreateSummand(('y', 0)), "1" };
+            yield return new object[] { SummandsHelper.CreateSummand(5, ('y', 0)), "5" };
         }
 
         public static IEnumerable<object[]> GetSummandsToCheckCorrectVariablesSorting()

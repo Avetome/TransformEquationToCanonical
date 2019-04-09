@@ -87,11 +87,16 @@ namespace EquationTransformer
                 return string.Empty;
             }
 
+            if (_variables.Count() == 1 && _variables.First().Value == 0)
+            {
+                return $"{Math.Abs(Multiplier).ToString(CultureInfo.InvariantCulture)}";
+            }
+
             var variables = _variables
                 .Select(v => (Variable: v.Key, Power: v.Value))
                 .OrderBy(v => v.Power)
                 .ThenBy(v => v.Variable)
-                .Select(v => v.Power > 1 ? $"{v.Variable}^{v.Power}" : $"{v.Variable}")
+                .Select(v => v.Power != 1 ? $"{v.Variable}^{v.Power}" : $"{v.Variable}")
                 .ToList();
 
             if (Multiplier == 1 && variables.Any())
