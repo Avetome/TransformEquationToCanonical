@@ -98,8 +98,7 @@ namespace EquationTransformer
 
             for (var i = 1; i < summands.Count; i++)
             {
-                // summands[i].Multiplier > 0.0
-                if (summands[i].Multiplier > double.Epsilon)
+                if (summands[i].Multiplier > 0.0)
                 {
                     sb.Append($" + {summands[i].ToString()}");
                 }
