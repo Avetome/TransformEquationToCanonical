@@ -29,7 +29,7 @@ namespace EquationTransformer
 
         public Token Token => _currentToken;
 
-        public Token PrevToken => _prevToken;        
+        public Token PrevToken => _prevToken;
 
         public double Number => _number;
 
@@ -106,7 +106,17 @@ namespace EquationTransformer
                     NextChar();
                     SkipWhitespaces();
 
-                    _variable.power = ReadInt();
+                    var sign = 1;
+
+                    if (_currentChar == '-')
+                    {
+                        sign = -1;
+
+                        NextChar();
+                        SkipWhitespaces();
+                    }
+
+                    _variable.power = sign * ReadInt();
                 }
 
                 _currentToken = Token.Variable;

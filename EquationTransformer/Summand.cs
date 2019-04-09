@@ -82,6 +82,11 @@ namespace EquationTransformer
 
         public string ToString(bool isInEquation = false)
         {
+            if (Math.Abs(Multiplier) < double.Epsilon && _variables.Any())
+            {
+                return string.Empty;
+            }
+
             var variables = _variables
                 .Select(v => (Variable: v.Key, Power: v.Value))
                 .OrderBy(v => v.Power)
@@ -89,7 +94,7 @@ namespace EquationTransformer
                 .Select(v => v.Power > 1 ? $"{v.Variable}^{v.Power}" : $"{v.Variable}")
                 .ToList();
 
-            if (Multiplier == 1)
+            if (Multiplier == 1 && variables.Any())
             {
                 return string.Join(string.Empty, variables);
             }
@@ -104,7 +109,7 @@ namespace EquationTransformer
                 return $"{Math.Abs(Multiplier).ToString(CultureInfo.InvariantCulture)}{string.Join(string.Empty, variables)}";
             }
 
-            if (Multiplier == -1)
+            if (Multiplier == -1 && variables.Any())
             {
                 return $"-{string.Join(string.Empty, variables)}";
             }

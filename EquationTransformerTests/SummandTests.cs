@@ -1,108 +1,77 @@
 using System;
+using System.Collections.Generic;
 using EquationTransformer;
+using EquationTransformerTests.Helpers;
 using Xunit;
 
 namespace EquationTransformerTests
 {
     public class SummandTests
     {
-        [Fact]
-        public void Test1()
+        [Theory(DisplayName = "Summands ToString() get readable and correct stringified summand")]
+        [MemberData(nameof(GetSimpleNumbersAndVariables))]
+        [MemberData(nameof(GetSummandsWithPower))]
+        [MemberData(nameof(GetSummandsToCheckCorrectVariablesSorting))]
+        [MemberData(nameof(GetSummandsToCheckSpecialMultipliers))]
+        public void SummandsToStringTests(Summand summand, string stringifiedSummand)
         {
-            var s1 = new Summand();
-            s1.Multiplier = 5;
-            s1.AddVariable('x', 2);
-            s1.AddVariable('y', 2);
-
-            var s2 = new Summand();
-            s2.Multiplier = 5;
-            s2.AddVariable('x', 2);
-            s2.AddVariable('y', 2);
-
-            Assert.True(s1.IsEqualent(s2));
+            Assert.Equal(stringifiedSummand, summand.ToString());
         }
 
-        [Fact]
-        public void Test2()
+        [Theory(DisplayName = "Summands ToString() should correct handle isInEquation parameter")]
+        [MemberData(nameof(GetDataForCheckWithIsInEquation))]
+        public void SummandsToStringWithisInEquationTests(
+            Summand summand,
+            string stringifiedSummand,
+            string stringifiedWithIsInEquationSummand)
         {
-            var s1 = new Summand();
-            s1.Multiplier = 5;
-            s1.AddVariable('x', 2);
-            s1.AddVariable('y', 2);
-
-            var s2 = new Summand();
-            s2.Multiplier = 5;
-            s2.AddVariable('z', 2);
-            s2.AddVariable('y', 2);
-
-            Assert.False(s1.IsEqualent(s2));
+            Assert.Equal(stringifiedSummand, summand.ToString());
+            Assert.Equal(stringifiedWithIsInEquationSummand, summand.ToString(isInEquation: true));
         }
 
-        [Fact]
-        public void Test3()
+        public static IEnumerable<object[]> GetSimpleNumbersAndVariables()
         {
-            var s1 = new Summand();
-            s1.Multiplier = 2;
-            s1.AddVariable('x', 2);
-            s1.AddVariable('y', 2);
-            s1.AddVariable('x', 2);
+            yield return new object[] { SummandsHelper.CreateSummand(0), "0" };
+            yield return new object[] { SummandsHelper.CreateSummand(1), "1" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1), "-1" };
+            yield return new object[] { SummandsHelper.CreateSummand(15), "15" };
+            yield return new object[] { SummandsHelper.CreateSummand(-15), "-15" };
 
-            var s2 = new Summand();
-            s2.Multiplier = 5;
-            s2.AddVariable('x', 4);
-            s2.AddVariable('y', 2);
+            yield return new object[] { SummandsHelper.CreateSummand(('y', 1)), "y"};
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 1)), "-y" };
 
-            Assert.True(s1.IsEqualent(s2));
+            yield return new object[] { SummandsHelper.CreateSummand(('y', 2)), "y^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2)), "-y^2" };
+
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 1)), "-xy^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 3), ('z', 1)), "-zy^2x^3" };
         }
 
-        [Fact]
-        public void Test4()
+        public static IEnumerable<object[]> GetSummandsWithPower()
         {
-            var s1 = new Summand();
-            s1.Multiplier = 2;
-            s1.AddVariable('x', 2);
-            s1.AddVariable('y', 2);
-            s1.AddVariable('z', 2);
-
-            var s2 = new Summand();
-            s2.Multiplier = 5;
-            s2.AddVariable('x', 2);
-            s2.AddVariable('y', 2);
-
-            Assert.False(s1.IsEqualent(s2));
+            yield return new object[] { SummandsHelper.CreateSummand(('y', 2)), "y^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2)), "-y^2" };
         }
 
-        [Fact]
-        public void Test5()
+        public static IEnumerable<object[]> GetSummandsToCheckCorrectVariablesSorting()
         {
-            var s1 = new Summand();
-            s1.Multiplier = 2;
-            s1.AddVariable('x', 2);
-            s1.AddVariable('y', 2);
-            s1.AddVariable('z', 2);
-
-            Assert.Equal("2x^2y^2z^2", s1.ToString());
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 1)), "-xy^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 3), ('z', 1)), "-zy^2x^3" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 2), ('z', 1)), "-zx^2y^2" };
         }
 
-        [Fact]
-        public void Test6()
+        public static IEnumerable<object[]> GetSummandsToCheckSpecialMultipliers()
         {
-            var s1 = new Summand();
-            s1.Multiplier = 2;
-            s1.AddVariable('x', 1);
-
-            Assert.Equal("2x", s1.ToString());
+            yield return new object[] { SummandsHelper.CreateSummand(1, ('y', 2), ('x', 1)), "xy^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 1)), "-xy^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(0, ('y', 2), ('x', 1)), string.Empty };
         }
 
-        [Fact]
-        public void Test7()
+        public static IEnumerable<object[]> GetDataForCheckWithIsInEquation()
         {
-            var s1 = new Summand();
-            s1.Multiplier = 2;
-            s1.AddVariable('y', 1);
-            s1.AddVariable('x', 1);            
-
-            Assert.Equal("2xy", s1.ToString());
+            yield return new object[] { SummandsHelper.CreateSummand(5), "5", "5" };
+            yield return new object[] { SummandsHelper.CreateSummand(1, ('x', 1)), "x", "x" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 1)), "-xy^2", "xy^2" };
         }
     }
 }

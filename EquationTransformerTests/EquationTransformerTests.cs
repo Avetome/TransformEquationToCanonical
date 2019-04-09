@@ -142,5 +142,17 @@ namespace EquationTransformerTests
 
             Assert.Equal("Equals not found", ex.Message);
         }
+
+        [Fact(DisplayName = "Equation: 2 - 1 = x")]
+        public void Test12()
+        {
+            var str = "2 - 1 = x";
+
+            var trasformer = new EquationTrasformer();
+
+            var result = trasformer.Transform(str);
+
+            Assert.Equal("-x + 1 = 0;", result);
+        }
     }
 }
