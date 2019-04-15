@@ -87,6 +87,7 @@ namespace EquationTransformerTests
             yield return new object[] { SummandsHelper.CreateSummand(5), "5", "5" };
             yield return new object[] { SummandsHelper.CreateSummand(1, ('x', 1)), "x", "x" };
             yield return new object[] { SummandsHelper.CreateSummand(-1, ('y', 2), ('x', 1)), "-xy^2", "xy^2" };
+            yield return new object[] { SummandsHelper.CreateSummand(-1), "-1", "1" };
         }
     }
 }

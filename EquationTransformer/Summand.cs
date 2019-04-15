@@ -106,7 +106,7 @@ namespace EquationTransformer
 
             if (isInEquation)
             {
-                if (Multiplier == -1)
+                if (Multiplier == -1 && variables.Any())
                 {
                     return string.Join(string.Empty, variables);
                 }

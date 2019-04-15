@@ -78,6 +78,14 @@ namespace EquationTransformerTests
             yield return new object[] {
                 "x^-1 = 5",
                 "x^-1 - 5 = 0;" };
+
+            yield return new object[] {
+                "x = y",
+                "x - y = 0;" };
+
+            yield return new object[] {
+                "x + y = 1",
+                "x + y - 1 = 0;" };
         }
 
         public static IEnumerable<object[]> GetInvalidEquations()
