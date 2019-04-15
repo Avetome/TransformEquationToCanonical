@@ -100,9 +100,6 @@ namespace EquationTransformer
 
                     outputFile.WriteLine(result);
                 }
-                inputFile.Close();
-                outputFile.Flush();
-                outputFile.Close();
 
                 Console.WriteLine("File processing finished");
             }
