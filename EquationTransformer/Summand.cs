@@ -99,14 +99,16 @@ namespace EquationTransformer
                 .Select(v => v.Power != 1 ? $"{v.Variable}^{v.Power}" : $"{v.Variable}")
                 .ToList();
 
-            if (Multiplier == 1 && variables.Any())
+            // Multiplier == 1
+            if (Math.Abs(Multiplier - 1) < double.Epsilon && variables.Any())
             {
                 return string.Join(string.Empty, variables);
             }
 
             if (isInEquation)
             {
-                if (Multiplier == -1 && variables.Any())
+                // Multiplier == -1
+                if (Math.Abs(Multiplier + 1) < double.Epsilon && variables.Any())
                 {
                     return string.Join(string.Empty, variables);
                 }
@@ -114,7 +116,8 @@ namespace EquationTransformer
                 return $"{Math.Abs(Multiplier).ToString(CultureInfo.InvariantCulture)}{string.Join(string.Empty, variables)}";
             }
 
-            if (Multiplier == -1 && variables.Any())
+            // Multiplier == -1
+            if (Math.Abs(Multiplier + 1) < double.Epsilon && variables.Any())
             {
                 return $"-{string.Join(string.Empty, variables)}";
             }
